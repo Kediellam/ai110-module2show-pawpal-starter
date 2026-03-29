@@ -21,15 +21,30 @@ class Task:
 
     def mark_complete(self) -> None:
         """Mark this task as completed."""
-        pass
+        self.completed = True
 
     def is_conflicting(self, other: "Task") -> bool:
-        """Check if this task conflicts with another task (e.g., overlapping times)."""
-        pass
+        """Return True if this task overlaps in time with another task."""
+        # Tasks without due_time don't conflict (can be scheduled flexibly)
+        if self.due_time is None or other.due_time is None:
+            return False
+        
+        # Calculate end times
+        self_end = self.due_time.timestamp() + (self.duration * 60)  # duration is in minutes
+        other_end = other.due_time.timestamp() + (other.duration * 60)
+        
+        # Check for overlap: self starts before other ends AND other starts before self ends
+        self_start = self.due_time.timestamp()
+        other_start = other.due_time.timestamp()
+        
+        return self_start < other_end and other_start < self_end
 
     def __str__(self) -> str:
-        """Return a string representation of the task."""
-        pass
+        """Return a formatted string representation of the task with status and details."""
+        status = "✓" if self.completed else "○"
+        recurring_tag = " (recurring)" if self.recurring else ""
+        due_str = f" @ {self.due_time.strftime('%H:%M')}" if self.due_time else ""
+        return f"{status} {self.name} ({self.duration}min, priority {self.priority}){due_str}{recurring_tag}"
 
 
 @dataclass
@@ -41,44 +56,41 @@ class Pet:
     tasks: List[Task] = field(default_factory=list)
 
     def add_task(self, task: Task) -> None:
-        """Add a task to this pet's task list."""
-        pass
+        """Append a task to this pet's task list."""
+        self.tasks.append(task)
 
     def remove_task(self, task_name: str) -> None:
-        """Remove a task by name from this pet's task list."""
-        pass
+        """Remove all tasks with the given name from this pet's task list."""
+        self.tasks = [task for task in self.tasks if task.name != task_name]
 
     def get_tasks(self) -> List[Task]:
-        """Return all tasks for this pet."""
-        pass
+        """Return this pet's complete list of tasks."""
+        return self.tasks
 
 
 class Owner:
     """Represents a pet owner who manages one or more pets."""
 
     def __init__(self, name: str, available_time: float) -> None:
-        """
-        Initialize an Owner.
-
-        Args:
-            name: The owner's name
-            available_time: Total available time per day in minutes
-        """
+        """Initialize an owner with a name and available daily time in minutes."""
         self.name: str = name
         self.available_time: float = available_time
         self.pets: List[Pet] = []
 
     def add_pet(self, pet: Pet) -> None:
-        """Add a pet to the owner's list of pets."""
-        pass
+        """Append a pet to the owner's list of pets."""
+        self.pets.append(pet)
 
     def remove_pet(self, pet_name: str) -> None:
-        """Remove a pet by name from the owner's list."""
-        pass
+        """Remove all pets with the given name from the owner's list."""
+        self.pets = [pet for pet in self.pets if pet.name != pet_name]
 
     def get_all_tasks(self) -> List[Task]:
-        """Return all tasks across all pets."""
-        pass
+        """Aggregate and return all tasks from all owned pets."""
+        all_tasks = []
+        for pet in self.pets:
+            all_tasks.extend(pet.get_tasks())
+        return all_tasks
 
 
 class Scheduler:
@@ -87,50 +99,50 @@ class Scheduler:
     def generate_daily_plan(
         self, tasks: List[Task], available_time: float
     ) -> List[Task]:
-        """
-        Generate an optimized daily plan from a list of tasks.
-
-        Args:
-            tasks: List of tasks to schedule
-            available_time: Total available time in minutes
-
-        Returns:
-            A prioritized list of tasks that fit within available time
-        """
-        pass
+        """Return pending tasks sorted by priority that fit within the available time."""
+        # Filter out completed tasks
+        pending_tasks = [task for task in tasks if not task.completed]
+        
+        # Sort by priority (highest first)
+        sorted_tasks = self.sort_tasks_by_priority(pending_tasks)
+        
+        # Fit tasks within available time
+        scheduled_plan = []
+        total_time = 0.0
+        
+        for task in sorted_tasks:
+            if total_time + task.duration <= available_time:
+                scheduled_plan.append(task)
+                total_time += task.duration
+        
+        return scheduled_plan
 
     def sort_tasks_by_priority(self, tasks: List[Task]) -> List[Task]:
-        """
-        Sort tasks by priority (highest first).
-
-        Args:
-            tasks: List of tasks to sort
-
-        Returns:
-            Sorted list of tasks by priority
-        """
-        pass
+        """Return tasks sorted by priority in descending order (highest first)."""
+        return sorted(tasks, key=lambda task: task.priority, reverse=True)
 
     def detect_conflicts(self, tasks: List[Task]) -> List[Tuple[Task, Task]]:
-        """
-        Detect conflicting tasks in the given list.
-
-        Args:
-            tasks: List of tasks to check for conflicts
-
-        Returns:
-            List of task pairs that have conflicts
-        """
-        pass
+        """Return a list of task pairs that have time conflicts."""
+        conflicts = []
+        
+        # Check each pair of tasks
+        for i in range(len(tasks)):
+            for j in range(i + 1, len(tasks)):
+                if tasks[i].is_conflicting(tasks[j]):
+                    conflicts.append((tasks[i], tasks[j]))
+        
+        return conflicts
 
     def explain_plan(self, plan: List[Task]) -> str:
-        """
-        Generate a human-readable explanation of the scheduling plan.
-
-        Args:
-            plan: The scheduled plan to explain
-
-        Returns:
-            A string explanation of how the schedule was created
-        """
-        pass
+        """Return a formatted summary of the scheduled tasks and total duration."""
+        if not plan:
+            return "No tasks scheduled."
+        
+        explanation = "Daily Schedule:\n"
+        total_duration = sum(task.duration for task in plan)
+        
+        for i, task in enumerate(plan, 1):
+            explanation += f"{i}. {task.name} ({task.duration}min, priority {task.priority})\n"
+        
+        explanation += f"\nTotal scheduled time: {total_duration} minutes"
+        return explanation
