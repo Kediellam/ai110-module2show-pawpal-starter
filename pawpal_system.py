@@ -6,7 +6,7 @@ A system for managing pet care tasks with owner and scheduler support.
 
 from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
-from datetime import datetime
+from datetime import timedelta, datetime
 
 
 @dataclass
@@ -15,7 +15,7 @@ class Task:
     name: str
     duration: float  # in minutes
     priority: int  # 1-5, where 5 is highest
-    recurring: bool = False
+    recurring: Optional[str] = None  # "daily", "weekly", or None
     due_time: Optional[datetime] = None
     completed: bool = False
 
@@ -121,8 +121,22 @@ class Scheduler:
         """Return tasks sorted by priority in descending order (highest first)."""
         return sorted(tasks, key=lambda task: task.priority, reverse=True)
 
+    def sort_tasks_by_time(self, tasks: List[Task]) -> List[Task]:
+        """Sort tasks by due_time (earliest first), placing tasks without due_time at the end."""
+        return sorted(tasks, key=lambda task: (task.due_time is None, task.due_time))
+
+    def filter_tasks_by_status(self, tasks: List[Task], completed: bool) -> List[Task]:
+        """Return tasks filtered by completion status. If completed=True, return completed tasks; else return pending tasks."""
+        return [task for task in tasks if task.completed == completed]
+
+    def filter_tasks_by_pet(self, tasks: List[Task], pet: Pet) -> List[Task]:
+        """Return only tasks belonging to the specified pet."""
+        """Filter tasks by assigned pet."""
+        pet_tasks = set(pet.get_tasks())
+        return [task for task in tasks if task in pet_tasks]
+
     def detect_conflicts(self, tasks: List[Task]) -> List[Tuple[Task, Task]]:
-        """Return a list of task pairs that have time conflicts."""
+        """Detect scheduling conflicts between tasks with the same time."""
         conflicts = []
         
         # Check each pair of tasks
@@ -146,3 +160,23 @@ class Scheduler:
         
         explanation += f"\nTotal scheduled time: {total_duration} minutes"
         return explanation
+
+    def handle_recurring_task(self, task: Task) -> Optional[Task]:
+        """Generate the next occurrence of a recurring task."""
+        if not task.recurring:
+            return None
+
+        if task.recurring == "daily":
+            next_due = task.due_time + timedelta(days=1) if task.due_time else None
+        elif task.recurring == "weekly":
+            next_due = task.due_time + timedelta(weeks=1) if task.due_time else None
+        else:
+            return None
+
+        return Task(
+            name=task.name,
+            duration=task.duration,
+            priority=task.priority,
+            due_time=next_due,
+            recurring=task.recurring
+        )
