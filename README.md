@@ -44,3 +44,13 @@ pip install -r requirements.txt
 
 ## Smarter Scheduling
 This project now includes an improved scheduling system. The scheduler can now sort tasks by due time, filter tasks by pet or completion status, and detect scheduling conflicts to prevent overlapping events. It also supports recurring tasks (daily and weekly), automatically generating the next time a task is completed.
+
+## Testing PawPal+
+To run the tests:
+python -m pytest
+The test suite covers:
+- Conflict detection for tasks scheduled at the same time
+- Sorting tasks in chronological order based on due time
+- Recurring task logic
+- Edge cases such as missing due times and empty task lists
+Confidence Level: (4/5)

@@ -163,13 +163,13 @@ class Scheduler:
 
     def handle_recurring_task(self, task: Task) -> Optional[Task]:
         """Generate the next occurrence of a recurring task."""
-        if not task.recurring:
+        if not task.recurring or not task.due_time:
             return None
 
         if task.recurring == "daily":
-            next_due = task.due_time + timedelta(days=1) if task.due_time else None
+            next_due = task.due_time + timedelta(days=1)
         elif task.recurring == "weekly":
-            next_due = task.due_time + timedelta(weeks=1) if task.due_time else None
+            next_due = task.due_time + timedelta(weeks=1)
         else:
             return None
 
