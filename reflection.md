@@ -31,7 +31,9 @@ One important change was recognizing the need for unique identifiers for both Pe
 **a. Constraints and priorities**
 
 - What constraints does your scheduler consider (for example: time, priority, preferences)?
+My scheduler considers many key constraints: Time, Priority, Task duration, etc.
 - How did you decide which constraints mattered most?
+I decided that these constraints were the most important because the goal of the system is to create a simple, legible scheduling assistant that prioritizes clarity and correctness over complete real-world complexity.
 
 **b. Tradeoffs**
 
@@ -45,39 +47,40 @@ One tradeoff in my scheduler is between simplicity and making sure that conflict
 **a. How you used AI**
 
 - How did you use AI tools during this project (for example: design brainstorming, debugging, refactoring)?
+I used AI tools (VS Code Copilot) throughout the project to support different stages of development. In the early stages, I used AI for design brainstorming to better understand how to structure the system with classes such as Task, Pet, Owner, and Scheduler. 
 - What kinds of prompts or questions were most helpful?
+The most helpful prompts were:
+“How do I sort objects using a lambda key in Python?”
+“How can I detect conflicts in a schedule without making the system too complex?”
 
 **b. Judgment and verification**
-
 - Describe one moment where you did not accept an AI suggestion as-is.
 - How did you evaluate or verify what the AI suggested?
-
+One example where I did not accept an AI suggestion as-is was during conflict detection.The AI suggested a method to check overlapping time intervals between tasks, but I simplified it to detect only exact time matches using due_time. I tested my approach to ensure it accurately identified expected conflicts.
 ---
 
 ## 4. Testing and Verification
 
 **a. What you tested**
-
 - What behaviors did you test?
+I tested three core behaviors of the PawPal+ system: Sorting correctness, Recurring task logic, and Conflict detection. 
 - Why were these tests important?
-
+These tests were important because they ensured that the core scheduling logic functions correctly under normal conditions and also addresses edge cases, such as missing due times or conflicting schedules.
 **b. Confidence**
-
 - How confident are you that your scheduler works correctly?
+I am moderately to highly confident (4/5 stars) that my scheduler works correctly for its intended scope.
 - What edge cases would you test next if you had more time?
-
+If I had more time, I would test more edge cases, such as: multiple recurring tasks over several days or stress testing with a large number of tasks.
 ---
 
 ## 5. Reflection
 
 **a. What went well**
-
 - What part of this project are you most satisfied with?
-
+I am most satisfied with how the scheduling logic integrates with the Streamlit user interface.
 **b. What you would improve**
-
 - If you had another iteration, what would you improve or redesign?
-
+If I had another iteration, I would improve data persistence so that tasks are saved even after the session ends.
 **c. Key takeaway**
-
 - What is one important thing you learned about designing systems or working with AI on this project?
+One important thing I learned from this project is that system design is just as important as writing correct code.

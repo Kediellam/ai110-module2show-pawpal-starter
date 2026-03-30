@@ -1,12 +1,6 @@
 from pawpal_system import Owner, Pet, Task, Scheduler
 import streamlit as st
 
-if "owner" not in st.session_state:
-    st.session_state.owner = Owner(name=owner_name, available_time=240)
-
-if "scheduler" not in st.session_state:
-    st.session_state.scheduler = Scheduler()
-
 st.set_page_config(page_title="PawPal+", page_icon="🐾", layout="centered")
 
 st.title("🐾 PawPal+")
@@ -50,11 +44,24 @@ owner_name = st.text_input("Owner name", value="Jordan")
 pet_name = st.text_input("Pet name", value="Mochi")
 species = st.selectbox("Species", ["dog", "cat", "other"])
 
-st.markdown("### Tasks")
-st.caption("Add a few tasks. In your final version, these should feed into your scheduler.")
+# Initialize session state
+if "owner" not in st.session_state:
+    st.session_state.owner = Owner(name=owner_name, available_time=240)
+
+if "scheduler" not in st.session_state:
+    st.session_state.scheduler = Scheduler()
 
 if "tasks" not in st.session_state:
     st.session_state.tasks = []
+
+if "pet" not in st.session_state:
+    st.session_state.pet = Pet(name=pet_name, species=species, age=1)
+
+if "pet" not in st.session_state:
+    st.session_state.pet = Pet(name=pet_name, species=species, age=1)
+
+st.markdown("### Tasks")
+st.caption("Add a few tasks. In your final version, these should feed into your scheduler.")
 
 col1, col2, col3 = st.columns(3)
 with col1:
@@ -71,16 +78,25 @@ if st.button("Add task"):
         priority=3 if priority == "medium" else (5 if priority == "high" else 1)
     )
 
-    if "pet" not in st.session_state:
-        st.session_state.pet = Pet(name=pet_name, species=species, age=1)
-
     st.session_state.pet.add_task(new_task)
+    st.session_state.tasks.append(new_task)
 
     st.success("Task added to pet!")
 
+# Display current tasks
 if st.session_state.tasks:
     st.write("Current tasks:")
-    st.table(st.session_state.tasks)
+    sorted_tasks = st.session_state.scheduler.sort_tasks_by_time(st.session_state.tasks)
+    
+    task_data = []
+    for task in sorted_tasks:
+        task_data.append({
+            "Task": task.name,
+            "Duration (min)": task.duration,
+            "Priority": task.priority,
+            "Time": task.due_time.strftime('%H:%M') if task.due_time else "Flexible"
+        })
+    st.table(task_data)
 else:
     st.info("No tasks yet. Add one above.")
 
